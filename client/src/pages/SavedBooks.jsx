@@ -1,3 +1,7 @@
+// Probably need to change react to react router dom as well as import apollo client
+// import { useParams } from 'react-router-dom';
+// import { useQuery } from '@apollo/client';
+
 import { useState, useEffect } from 'react';
 import {
   Container,
@@ -7,6 +11,7 @@ import {
   Col
 } from 'react-bootstrap';
 
+// need to swap the api util calls??
 import { getMe, deleteBook } from '../utils/API';
 import Auth from '../utils/auth';
 import { removeBookId } from '../utils/localStorage';
