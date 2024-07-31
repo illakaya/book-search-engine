@@ -1,3 +1,5 @@
+// import from Apollo to integrate GraphQL
+import { useMutation } from '@apollo/client';
 import { useState, useEffect } from 'react';
 import {
   Container,
@@ -8,12 +10,10 @@ import {
   Row
 } from 'react-bootstrap';
 
-// connect with apolloclient
-import { useQuery, useMutation } from '@apollo/client';
-// Probably also need to import Apollo her as well
 import Auth from '../utils/auth';
-// change to graphql
-import { saveBook, searchGoogleBooks } from '../utils/API';
+// Change from API calls to GraphQL/Apollo mutations
+import { /*saveBook,*/ searchGoogleBooks } from '../utils/API';
+import { SAVE_BOOK } from '../utils/mutations';
 import { saveBookIds, getSavedBookIds } from '../utils/localStorage';
 
 const SearchBooks = () => {
@@ -25,11 +25,15 @@ const SearchBooks = () => {
   // create state to hold saved bookId values
   const [savedBookIds, setSavedBookIds] = useState(getSavedBookIds());
 
+  // utilise the useMutation from Apollo/GraphQL
+  // const [searchGoogleBooks, { data }] = useMutation(SEARCH_BOOKS);
+  const [saveBook] = useMutation(SAVE_BOOK);
+  
   // set up useEffect hook to save `savedBookIds` list to localStorage on component unmount
   // learn more here: https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup
   useEffect(() => {
     return () => saveBookIds(savedBookIds);
-  });
+  }, [savedBookIds]);
 
   // create method to search for books and set state on form submit
   const handleFormSubmit = async (event) => {
@@ -76,12 +80,15 @@ const SearchBooks = () => {
     }
 
     try {
+      // no longer an api call, adjust for graphql/apollo
+      /*
       const response = await saveBook(bookToSave, token);
 
       if (!response.ok) {
         throw new Error('something went wrong!');
       }
-
+      */
+      await saveBook({ variables: { bookData: bookToSave } });
       // if book successfully saves to user's account, save book id to state
       setSavedBookIds([...savedBookIds, bookToSave.bookId]);
     } catch (err) {
