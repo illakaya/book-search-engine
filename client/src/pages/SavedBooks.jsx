@@ -1,8 +1,7 @@
-// Probably need to change react to react router dom as well as import apollo client
-// import { useParams } from 'react-router-dom';
-// import { useQuery } from '@apollo/client';
-
-import { useState, useEffect } from 'react';
+// import from Apollo to integrate GraphQL
+import { useQuery, useMutation } from '@apollo/client';
+// remove react useState and useEffect as it is no longer used
+// import { useState, useEffect } from 'react';
 import {
   Container,
   Card,
@@ -11,12 +10,16 @@ import {
   Col
 } from 'react-bootstrap';
 
-// need to swap the api util calls??
-import { getMe, deleteBook } from '../utils/API';
+// change from api to apollo/graphQL
+// import { getMe, deleteBook } from '../utils/API';
+import { QUERY_ME } from '../utils/queries';
+import { DELETE_BOOK } from '../utils/mutations';
 import Auth from '../utils/auth';
 import { removeBookId } from '../utils/localStorage';
 
 const SavedBooks = () => {
+  // Change from api call to GraphQL
+  /*
   const [userData, setUserData] = useState({});
 
   // use this to determine if `useEffect()` hook needs to run again
@@ -46,16 +49,19 @@ const SavedBooks = () => {
 
     getUserData();
   }, [userDataLength]);
-
+  */
+  const { loading, data } = useQuery(QUERY_ME);
+  const [deleteBook] = useMutation(DELETE_BOOK);
+  const userData = data?.me || {};
   // create function that accepts the book's mongo _id value as param and deletes the book from the database
   const handleDeleteBook = async (bookId) => {
     const token = Auth.loggedIn() ? Auth.getToken() : null;
-
     if (!token) {
       return false;
     }
-
     try {
+      // Change from api to Apollo/GraphQL
+      /*
       const response = await deleteBook(bookId, token);
 
       if (!response.ok) {
@@ -64,6 +70,8 @@ const SavedBooks = () => {
 
       const updatedUser = await response.json();
       setUserData(updatedUser);
+      */
+      await deleteBook({ variables: { bookId } });
       // upon success, remove book's id from localStorage
       removeBookId(bookId);
     } catch (err) {
@@ -71,8 +79,8 @@ const SavedBooks = () => {
     }
   };
 
-  // if data isn't here yet, say so
-  if (!userDataLength) {
+  // if data isn't here yet, say so, change from userDataLength to loading from useQuery(QUERY_ME)
+  if (!loading) {
     return <h2>LOADING...</h2>;
   }
 
@@ -92,8 +100,9 @@ const SavedBooks = () => {
         <Row>
           {userData.savedBooks.map((book) => {
             return (
-              <Col md="4">
-                <Card key={book.bookId} border='dark'>
+              // moved key due to js lint error
+              <Col md="4" key={book.bookId}>
+                <Card border='dark'>
                   {book.image ? <Card.Img src={book.image} alt={`The cover for ${book.title}`} variant='top' /> : null}
                   <Card.Body>
                     <Card.Title>{book.title}</Card.Title>
