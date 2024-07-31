@@ -1,12 +1,15 @@
 const express = require("express");
 // Need to import Apollo server
-const { ApolloServer } = require('@apollo/server');
+const { ApolloServer } = require("@apollo/server");
 // as well as the express middleware
-const { expressMiddleware } = require('@apollo/server/express4');
+const { expressMiddleware } = require("@apollo/server/express4");
+// need to connect and define the schemas and resolvers
+const { typeDefs, resolvers } = require("./schemas");
+
+// Importing JW tokens for Middleware authentication
+const { authMiddleware } = require("./utils/auth");
+
 const path = require("path");
-const { authMiddleware } = require('./utils/auth');
-// need to define the schemas as well
-const { typeDefs, resolvers } = require('./schemas');
 const db = require("./config/connection");
 
 // We probably do not need this anymore because it will be combined with the resolvers
@@ -17,7 +20,7 @@ const db = require("./config/connection");
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Need to define the server
+// Need to define the Apollo server
 const server = new ApolloServer({
   typeDefs,
   resolvers,
@@ -27,16 +30,20 @@ const server = new ApolloServer({
 const startApolloServer = async () => {
   // Start the Apollo server
   await server.start();
-  
+
   // Change to false
-  app.use(express.urlencoded({ extended: false }));
+  app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
-  
-  // Need to change from routes to graphql
-  app.use('/graphql', expressMiddleware(server, {
-    context: authMiddleware
-  }));
+
+  // Apply authentication middleware and remove the use of routes in preference for GraphQL
   // app.use(routes);
+  app.use(
+    "/graphql",
+    expressMiddleware(server, {
+      context: authMiddleware,
+    })
+  );
+  
 
   // if we're in production, serve client/build as static assets
   // NOTES FROM 21 MERN: 11 MERN SETUP
@@ -45,10 +52,6 @@ const startApolloServer = async () => {
   // In production, our Node server runs and delivers our client-side bundle from the dist/ folder - change from build to dist
   if (process.env.NODE_ENV === "production") {
     app.use(express.static(path.join(__dirname, "../client/dist")));
-    
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-    });
   }
 
   db.once("open", () => {
@@ -58,7 +61,7 @@ const startApolloServer = async () => {
       console.log(`Use GraphQL at http://localhost:${PORT}/graphql`);
     });
   });
-}
+};
 
 // Need to start the apolloServer by calling the function
 startApolloServer();
