@@ -1,7 +1,11 @@
+// Import from Apollo to integrate GraphQL
+import { useMutation } from '@apollo/client';
 import { useState } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 
-import { createUser } from '../utils/API';
+// Change from api to Apollo/GraphQL
+// import { createUser } from '../utils/API';
+import { ADD_USER } from '../utils/mutations';
 import Auth from '../utils/auth';
 
 const SignupForm = () => {
@@ -11,6 +15,8 @@ const SignupForm = () => {
   const [validated] = useState(false);
   // set state for alert
   const [showAlert, setShowAlert] = useState(false);
+  // setup allows communication with GraphQL 
+  const [addUser, { error, data }] = useMutation(ADD_USER);
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -28,6 +34,8 @@ const SignupForm = () => {
     }
 
     try {
+      // Change from api to Apollo/GraphQL
+      /*
       const response = await createUser(userFormData);
 
       if (!response.ok) {
@@ -36,7 +44,12 @@ const SignupForm = () => {
 
       const { token, user } = await response.json();
       console.log(user);
-      Auth.login(token);
+      */
+      const { data } = await addUser({
+        variables: { ...userFormData },
+      });
+      // adjust
+      Auth.login(data.login.token);
     } catch (err) {
       console.error(err);
       setShowAlert(true);
