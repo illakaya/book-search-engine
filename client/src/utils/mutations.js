@@ -1,4 +1,4 @@
-// Create the GraphQL mutations
+// Create the graphql mutations
 import { gql } from '@apollo/client';
 
 export const LOGIN_USER = gql`
@@ -78,4 +78,4 @@ export const DELETE_BOOK = gql`
       }
     }
   }
-`
+`;
