@@ -1,4 +1,4 @@
-// Adding a GraphQL error
+// importing GraphQL error
 const { GraphQLError } = require('graphql');
 
 const jwt = require('jsonwebtoken');
@@ -8,7 +8,7 @@ const secret = 'mysecretsshhhhh';
 const expiration = '2h';
 
 module.exports = {
-  // Adding the GraphQL error
+  // Adding the GraphQL AuthenticationError
   AuthenticationError: new GraphQLError('Could not authenticate user.', {
     extensions: {
       code: 'UNAUTHENTICATED',
@@ -17,8 +17,8 @@ module.exports = {
   // function for our authenticated routes
   // edit authMiddleware to accomodate tokens being set via req.body as well
   // change parameters to request destructured
-  authMiddleware: function ( {req} ) {
-    // allows token to be sent via req.query or headers
+  authMiddleware: function ({ req }) {
+    // allows token to be sent via req.query or headers, add body to it as well
     let token = req.body.token || req.query.token || req.headers.authorization;
 
     // ["Bearer", "<tokenvalue>"]
@@ -28,6 +28,7 @@ module.exports = {
 
     if (!token) {
       // return req object instead
+      // return res.status(400).json({ message: 'invalid token!' });
       return req;
     }
 

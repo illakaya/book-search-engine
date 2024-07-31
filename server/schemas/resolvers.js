@@ -1,71 +1,59 @@
-// have to look at how all of the data is called and utilised 
-// Compared to the user-controller.js
-
+// had a look at how all of the data in the API routes are called and utilised in comparison to the user-controller.js
+// Import the models and authorisation
 const { User } = require('../models');
 const { signToken, AuthenticationError } = require('../utils/auth');
 
 const resolvers = {
   Query: {
-    // We do not need this
-    /*
-    users: async () => {
-      return await User.find({});
-    },
-    */
-    // get a single user by either their id or their username
-    user: async (parent, { user = null, params }) => {
-      return User.findOne({
-        $or: [{ _id: user ? user._id : params.id }, { username: params.username }],
-      });
-    },
-    // Also don't need this as the function is not in controller
-    /*
+    // get the user by their id context
     me: async (parent, args, context) => {
       if (context.user) {
         return User.findOne({ _id: context.user._id });
       }
       throw new AuthenticationError('You need to be logged in!');
     },
-    */
   },
 
   Mutation: {
-    addUser: async (parent, { body }) => {
-      const user = await User.create({ body });
+    addUser: async (parent, { username, email, password }) => {
+      const user = await User.create({ username, email, password });
       const token = signToken(user);
       return { token, user };
     },
-    login: async (parent, { body }) => {
-      const user = await User.findOne({ $or: [{ username: body.username }, { email: body.email }] });
-
+    login: async (parent, { email, password }) => {
+      const user = await User.findOne({ email });
       if (!user) {
+        // do not define the error in order to make it a little bit more secure
         throw AuthenticationError;
       }
-
-      const correctPw = await user.isCorrectPassword(body.password);
-
+      const correctPw = await user.isCorrectPassword(password);
       if (!correctPw) {
+        // do not define the error in order to make it a little bit more secure
         throw AuthenticationError;
       }
-
       const token = signToken(user);
-
       return { token, user };
     },
-    saveBook: async (parent, { user, book }) => {
-      return await User.findOneAndUpdate(
-        { username },
-        { $addToSet: { savedBooks: book } },
-        // this will return the new object instead of the old in GraphQL
-        { new: true, runValidators: true }
-      );
+    saveBook: async (parent, { bookData }, context) => {
+      if (context.user) {
+        return User.findByIdAndUpdate(
+          { _id: context.user._id },
+          { $addToSet: { savedBooks: bookData } },
+          // this will return the new object instead of the old in GraphQL
+          { new: true, runValidators: true }
+        );
+      }
+      throw AuthenticationError;
     },
-    removeBook: async (parent, { username, params }) => {
-      return await User.findOneAndUpdate(
-        { _id: user._id },
-        { $pull: { savedBooks: { bookId: params.bookId } } },
-        { new: true }
-      );
+    deleteBook: async (parent, { bookId }, context) => {
+      if (context.user) {
+        return User.findByIdAndUpdate(
+          { _id: context.user._id },
+          { $pull: { savedBooks: { bookId } } },
+          { new: true }
+        );
+      }
+      throw AuthenticationError;
     },
   },
 };
