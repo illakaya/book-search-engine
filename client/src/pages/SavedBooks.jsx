@@ -80,7 +80,7 @@ const SavedBooks = () => {
   };
 
   // if data isn't here yet, say so, change from userDataLength to loading from useQuery(QUERY_ME)
-  if (!loading) {
+  if (loading) {
     return <h2>LOADING...</h2>;
   }
 

@@ -1,7 +1,7 @@
 // Create the graphql queries
-import { gql } from "@apollo/client";
+import { gql } from '@apollo/client';
 
-export const QUERY_ME = gql `
+export const QUERY_ME = gql`
   query me {
     me {
       _id
@@ -14,7 +14,7 @@ export const QUERY_ME = gql `
         description
         image
         link
+      }
     }
   }
 `;
-
