@@ -30,7 +30,7 @@ No extra installations are required.
 
 ## Usage
 
-Link to website: https://book-search-engine-xzgn.onrender.com/
+Link to website: https://book-search-engine-xzgn.onrender.com/   
 No special instructions are needed to use the application.
 
 ## Credits
